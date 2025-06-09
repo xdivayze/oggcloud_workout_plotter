@@ -23,21 +23,19 @@ func TestIntrasetHeatmap(t *testing.T) {
 	p.X.Label.Text = "Session Date"
 	p.Y.Label.Text = "Rep Number"
 
-	heatmap := intraset_heatmap.NewIntrasetHeatmap(data, vg.Points(10), vg.Points(50), vg.Points(200))
-
-	
+	heatmap := intraset_heatmap.NewIntrasetHeatmap(data, 200, 50, vg.Points(10), vg.Points(50), vg.Points(200))
 
 	p.Add(heatmap)
 	start := time.Now().AddDate(0, 0, -4).Truncate(24 * time.Hour) // Start 4 days ago, at midnight
-	end := time.Now().AddDate(0, 0, 1).Truncate(24 * time.Hour) // End today, at midnight
+	end := time.Now().AddDate(0, 0, 1).Truncate(24 * time.Hour)    // End today, at midnight
 
 	p.Y.Padding = vg.Length(40)
 
-	p.X.Tick.Marker = plot.TickerFunc( heatmap.GenerateXTickers)
+	p.X.Tick.Marker = plot.TickerFunc(heatmap.GenerateXTickers)
 
-	p.X.Max =  float64(end.Unix())  // Set max x to 5 days ago
+	p.X.Max = float64(end.Unix())   // Set max x to 5 days ago
 	p.X.Min = float64(start.Unix()) // Set min x to 5 days ago
-	
+
 	p.Y.Max = float64(heatmap.MaxReps + 5)
 	p.Y.Min = 1
 
