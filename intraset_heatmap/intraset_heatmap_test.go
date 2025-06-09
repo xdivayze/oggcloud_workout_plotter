@@ -1,6 +1,7 @@
 package intraset_heatmap_test
 
 import (
+	"image/color"
 	"math/rand"
 	"testing"
 	"time"
@@ -23,7 +24,15 @@ func TestIntrasetHeatmap(t *testing.T) {
 	p.X.Label.Text = "Session Date"
 	p.Y.Label.Text = "Rep Number"
 
-	heatmap := intraset_heatmap.NewIntrasetHeatmap(data, 175.0, 0.0, vg.Points(10), vg.Points(50), vg.Points(200))
+	heatmap := intraset_heatmap.NewIntrasetHeatmap(data, 175.0, 0.0, vg.Points(10), vg.Points(50), vg.Points(200), func(intensity float64) color.Color {
+		return color.RGBA{
+			R: 0,
+			G: uint8(intensity),
+			B: 0,
+			A: 255,
+		}
+
+	})
 
 	p.Add(heatmap)
 	start := time.Now().AddDate(0, 0, -4).Truncate(24 * time.Hour) // Start 4 days ago, at midnight
@@ -89,7 +98,7 @@ func generateRandomReps(n int, maxWeight float64, minWeight float64) []*intraset
 	for rdx := 0; rdx < len(repTracker); rdx++ {
 		w := minWeight + rand.Float64()*(maxWeight-minWeight)
 		for i := 0; i < repTracker[rdx]; i++ {
-			
+
 			reps = append(reps, intraset_heatmap.NewRep(w, m))
 			m++
 		}

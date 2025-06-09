@@ -67,7 +67,7 @@ func (i *IntrasetHeatmap) GenerateXTickers(min, max float64) []plot.Tick {
 	return ticks
 }
 
-func (i *IntrasetHeatmap) ColorInterpolation(weight, maxIntensity, minIntensity float64) color.Color {
+func (i *IntrasetHeatmap) ColorInterpolation(weight, maxIntensity, minIntensity float64, colorSetterFunction func(intensity float64)color.Color) color.Color {
 	slope := (maxIntensity - minIntensity) / (i.MaxWeight - i.MinWeight)
 	yIntercept := maxIntensity - slope*i.MaxWeight //calculate y intercept to write linear formula
 	intensity := slope*weight + yIntercept         //calculate intensity for the weight
@@ -77,17 +77,10 @@ func (i *IntrasetHeatmap) ColorInterpolation(weight, maxIntensity, minIntensity 
 	if intensity > maxIntensity {
 		intensity = maxIntensity // Ensure intensity is not above maximum
 	}
-
-	color := color.RGBA{
-		R: 0,
-		G: uint8(intensity) ,
-		B: 0, 
-		A: 255, 
-	}
-	return color
+	return colorSetterFunction(intensity) // Call the color setter function with the calculated intensity
 }
 
-func NewIntrasetHeatmap(data Sessioner, maxIntensity, minIntensity float64, columnWidth, minHeight, maxHeight vg.Length) *IntrasetHeatmap {
+func NewIntrasetHeatmap(data Sessioner, maxIntensity, minIntensity float64, columnWidth, minHeight, maxHeight vg.Length, colorSetterFunction func(intensity float64)color.Color) *IntrasetHeatmap {
 	cpy := CopySessions(data)
 	maxReps := 0
 	minReps := 0
@@ -136,7 +129,7 @@ func NewIntrasetHeatmap(data Sessioner, maxIntensity, minIntensity float64, colu
 			wg.Add(1)
 			for _, set := range session.Sets {
 				for _, rep := range set.Reps {
-					rep.Color = heatmap.ColorInterpolation(rep.Weight, maxIntensity, minIntensity)
+					rep.Color = heatmap.ColorInterpolation(rep.Weight, maxIntensity, minIntensity, colorSetterFunction)
 				}
 			}
 
