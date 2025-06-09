@@ -84,6 +84,7 @@ func NewIntrasetHeatmap(data Sessioner, columnWidth, minHeight, maxHeight vg.Len
 			maxReps = max(maxReps, len(set.Reps)) // Update max reps
 			minReps = min(minReps, len(set.Reps)) // Update min reps
 		}
+		session.Date = session.Date.Truncate(24 * time.Hour) // Normalize date to midnight
 
 	}
 	return &IntrasetHeatmap{

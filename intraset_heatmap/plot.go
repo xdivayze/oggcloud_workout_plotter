@@ -1,8 +1,6 @@
 package intraset_heatmap
 
 import (
-	"fmt"
-
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
@@ -16,7 +14,6 @@ func (i *IntrasetHeatmap) Plot(c draw.Canvas, plt *plot.Plot) { //TODO dynamical
 	nSession := i.Len()
 
 	totalWidthWithoutSessionSpacing := c.Size().X
-	fmt.Printf("canvas size is %f, total width without session spacing is %f\n", c.Size().X, totalWidthWithoutSessionSpacing)
 
 	perSessionWidth := (totalWidthWithoutSessionSpacing - vg.Length((nSession-1)*4)) / vg.Length(nSession)
 
@@ -25,15 +22,11 @@ func (i *IntrasetHeatmap) Plot(c draw.Canvas, plt *plot.Plot) { //TODO dynamical
 
 		sessionSetColWidth := perSessionWidth / vg.Length(setCount)
 		sessionDateUnix := float64(session.Date.Unix())
-		//margin := ((totalWidth/ vg.Length(nSession)) - sessionSetColWidth)/2
 
-		sessionDateString := session.Date.Format("2006-01-02")
-		fmt.Printf("Plotting session on %s \n", sessionDateString)
 		colx := trX(sessionDateUnix)
 		offset := sessionSetColWidth * vg.Length(setCount) / 2
 		x := colx - offset // bottom left corner of the first set in the session
 		for _, set := range session.Sets {
-			fmt.Printf("Plotting set %d for session on %s at x: %f\n", set.SetNo, session.Date, x)
 
 			for _, rep := range set.Reps {
 

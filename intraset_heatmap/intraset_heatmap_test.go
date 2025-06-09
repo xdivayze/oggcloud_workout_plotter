@@ -29,7 +29,9 @@ func TestIntrasetHeatmap(t *testing.T) {
 
 	p.Add(heatmap)
 	start := time.Now().AddDate(0, 0, -4).Truncate(24 * time.Hour) // Start 4 days ago, at midnight
-	end := time.Now().AddDate(0, 0, 1).Truncate(20 * time.Hour) // End today, at midnight
+	end := time.Now().AddDate(0, 0, 1).Truncate(24 * time.Hour) // End today, at midnight
+
+	p.Y.Padding = vg.Length(40)
 
 	p.X.Tick.Marker = plot.TickerFunc( heatmap.GenerateXTickers)
 
