@@ -79,7 +79,7 @@ func (i *IntrasetHeatmap) ColorInterpolation(weight, maxIntensity, minIntensity 
 	}
 
 	color := color.RGBA{
-		R: uint8(255-intensity),
+		R: 0,
 		G: uint8(intensity) ,
 		B: 0, 
 		A: 255, 
