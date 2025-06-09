@@ -6,7 +6,9 @@ import (
 	"gonum.org/v1/plot/vg/draw"
 )
 
-func (i *IntrasetHeatmap) Plot(c draw.Canvas, plt *plot.Plot) { //TODO dynamically calculated col width given a max session col size
+// TODO calculate the max and min x's of the designated are so that when excess
+// TODO space is available(min x is not exactly the min date) the column groups do not overlap
+func (i *IntrasetHeatmap) Plot(c draw.Canvas, plt *plot.Plot) {
 
 	trX, _ := plt.Transforms(&c)
 
