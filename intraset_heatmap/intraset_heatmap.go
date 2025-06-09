@@ -77,13 +77,12 @@ func (i *IntrasetHeatmap) ColorInterpolation(weight, maxIntensity, minIntensity 
 	if intensity > maxIntensity {
 		intensity = maxIntensity // Ensure intensity is not above maximum
 	}
-	// Convert intensity to a color value (0-255) in RED-GREEN gradient
-	// where RED indicates high weight and GREEN indicates low weight
+
 	color := color.RGBA{
-		R: uint8(intensity),
-		G: uint8(maxIntensity - intensity),
-		B: 0,
-		A: 255, // Fully opaque
+		R: uint8(255-intensity),
+		G: 0 ,
+		B: 0, 
+		A: 255, 
 	}
 	return color
 }
