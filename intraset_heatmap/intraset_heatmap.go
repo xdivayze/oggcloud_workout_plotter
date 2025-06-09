@@ -1,6 +1,12 @@
 package intraset_heatmap
 
-import "gonum.org/v1/plot/vg"
+import (
+	"math"
+	"time"
+
+	"gonum.org/v1/plot"
+	"gonum.org/v1/plot/vg"
+)
 
 //intraset heatmap displays color intensity for weight
 //n'th rep is displayed on the y axis
@@ -13,10 +19,10 @@ import "gonum.org/v1/plot/vg"
 
 type Sessioner interface {
 	GetSession(i int) *Session // GetSessions retrieves all sessions
-	Len() int                 // Len returns the number of sessions
+	Len() int                  // Len returns the number of sessions
 }
 
-type Sessions []*Session 
+type Sessions []*Session
 
 func (s Sessions) GetSession(i int) *Session {
 	if i < 0 || i >= len(s) {
@@ -38,21 +44,39 @@ func CopySessions(data Sessioner) Sessions { //TODO make dates in increasing ord
 }
 
 type IntrasetHeatmap struct {
+	TotalSetCount int // Total number of sets across all sessions
 	Sessions
-	 
+
 	ColumnWidth, MaxHeight, MinHeight vg.Length // Max and Min height for the vectoral height of each column
-	MaxReps, MinReps     int       // Max and Min reps across all sessions
+	MaxReps, MinReps                  int       // Max and Min reps across all sessions
 
 }
 
-func NewIntrasetHeatmap( data Sessioner, columnWidth,minHeight, maxHeight vg.Length) *IntrasetHeatmap {
+
+
+func (i *IntrasetHeatmap) GenerateXTickers(min, max float64) []plot.Tick {
+	const layout = "Jan 02"
+	var ticks []plot.Tick
+	const interval = float64(24 * time.Hour / time.Second)
+	for t := math.Ceil(min/interval) * interval; t <= max; t += interval {
+		ticks = append(ticks, plot.Tick{
+			Value: t,
+			Label: time.Unix(int64(t), 0).Format(layout),
+		})
+	}
+	return ticks
+}
+
+func NewIntrasetHeatmap(data Sessioner, columnWidth, minHeight, maxHeight vg.Length) *IntrasetHeatmap {
 	cpy := CopySessions(data)
 	maxReps := 0
 	minReps := 0
+	TotalSetCount := 0
 	for _, session := range cpy { // Iterate through each session to find max and min reps
 		if len(session.Sets) == 0 {
 			continue // Skip empty sessions
 		}
+		TotalSetCount += len(session.Sets) // Count total sets
 		for _, set := range session.Sets {
 			if len(set.Reps) == 0 {
 				continue // Skip empty sets
@@ -63,11 +87,12 @@ func NewIntrasetHeatmap( data Sessioner, columnWidth,minHeight, maxHeight vg.Len
 
 	}
 	return &IntrasetHeatmap{
-		Sessions:  cpy,
-		MaxHeight: maxHeight,
-		MinHeight: minHeight,
-		MaxReps:   maxReps,
-		MinReps:   minReps,
-		ColumnWidth: columnWidth,
+		Sessions:      cpy,
+		MaxHeight:     maxHeight,
+		MinHeight:     minHeight,
+		MaxReps:       maxReps,
+		MinReps:       minReps,
+		ColumnWidth:   columnWidth,
+		TotalSetCount: TotalSetCount,
 	}
 }
