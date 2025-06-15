@@ -10,23 +10,17 @@ import (
 // TODO space is available(min x is not exactly the min date) the column groups do not overlap
 func (i *IntrasetHeatmap) Plot(c draw.Canvas, plt *plot.Plot) {
 
-	trX, _ := plt.Transforms(&c)
-
-	//calculate the total width of the plot
-	nSession := i.Len()
-
-	totalWidthWithoutSessionSpacing := c.Size().X
-
-	perSessionWidth := (totalWidthWithoutSessionSpacing - vg.Length((nSession-1)*4)) / vg.Length(nSession)
+	trX, trY := plt.Transforms(&c)
+	totalSize := c.Rectangle.Size().X
+	i.ColumnWidth = totalSize / vg.Length(i.divisor)
 
 	for _, session := range i.Sessions {
 		setCount := len(session.Sets)
 
-		sessionSetColWidth := perSessionWidth / vg.Length(setCount)
 		sessionDateUnix := float64(session.Date.Unix())
 
 		colx := trX(sessionDateUnix)
-		offset := sessionSetColWidth * vg.Length(setCount) / 2
+		offset := i.ColumnWidth * vg.Length(setCount) / 2
 		x := colx - offset // bottom left corner of the first set in the session
 		for _, set := range session.Sets {
 
@@ -35,11 +29,11 @@ func (i *IntrasetHeatmap) Plot(c draw.Canvas, plt *plot.Plot) {
 				rect := vg.Rectangle{
 					Min: vg.Point{
 						X: x,
-						Y: i.height(rep.RepNo), // Height for each rep
+						Y: trY(float64(rep.RepNo)), // Height for each rep
 					},
 					Max: vg.Point{
-						X: x + sessionSetColWidth,
-						Y: i.height(rep.RepNo + 1), // Height for each rep
+						X: x + i.ColumnWidth,
+						Y: trY(float64(rep.RepNo + 1)), // Height for each rep
 					}}
 				p := rect.Path()
 				c.SetColor(rep.Color) // Set the color for the rectangle
@@ -47,7 +41,7 @@ func (i *IntrasetHeatmap) Plot(c draw.Canvas, plt *plot.Plot) {
 				c.Fill(p) // Fill the rectangle with the color
 
 			}
-			x += sessionSetColWidth // Move to the next set's x position
+			x += i.ColumnWidth // Move to the next set's x position
 
 		}
 	}

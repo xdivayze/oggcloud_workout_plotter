@@ -18,21 +18,30 @@ func TestIntrasetHeatmap(t *testing.T) {
 	rand := rand.New(rand.NewSource(0))
 	data := intraset_heatmap.Sessions(generateRandomData(5, 70, 20, 11, 5, 2, 5, rand))
 
+	minDate, maxDate := data.GetDateRange()
+	require.NotEqual(maxDate, minDate, "Max and Min dates should not be equal")
+
+	numberOfDays := int(maxDate.Sub(minDate).Hours() / 24) +1 // Include the last day in the count
+	divisor := numberOfDays * data.GetMaxSetSize()
+
+	require.Greater(divisor, 0, "Divisor should be greater than 0")
+
 	p := plot.New()
 
 	p.Title.Text = "Intraset Heatmap Test"
 	p.X.Label.Text = "Session Date"
 	p.Y.Label.Text = "Rep Number"
 
-	heatmap := intraset_heatmap.NewIntrasetHeatmap(data, 175.0, 0.0, vg.Points(10), vg.Points(50), vg.Points(200), func(intensity float64) color.Color {
-		return color.RGBA{
-			R: 0,
-			G: uint8(intensity),
-			B: 0,
-			A: 255,
-		}
+	heatmap := intraset_heatmap.NewIntrasetHeatmap(data, 175.0, 0.0, 0,
+		vg.Points(50), vg.Points(200), divisor, func(intensity float64) color.Color {
+			return color.RGBA{
+				R: 0,
+				G: uint8(intensity),
+				B: 0,
+				A: 255,
+			}
 
-	})
+		})
 
 	p.Add(heatmap)
 	start := time.Now().AddDate(0, 0, -4).Truncate(24 * time.Hour) // Start 4 days ago, at midnight
@@ -46,7 +55,7 @@ func TestIntrasetHeatmap(t *testing.T) {
 	p.X.Min = float64(start.Unix()) // Set min x to 5 days ago
 
 	p.Y.Max = float64(heatmap.MaxReps + 5)
-	p.Y.Min = 1
+	p.Y.Min = 0
 
 	require.Nil(p.Save(10*vg.Centimeter, 10*vg.Centimeter, "intraset_heatmap_test.png"))
 
