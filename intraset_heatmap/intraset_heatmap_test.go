@@ -1,6 +1,7 @@
 package intraset_heatmap_test
 
 import (
+	"image/color"
 	"math/rand"
 	"testing"
 	"time"
@@ -23,21 +24,27 @@ func TestIntrasetHeatmap(t *testing.T) {
 	p.X.Label.Text = "Session Date"
 	p.Y.Label.Text = "Rep Number"
 
-	heatmap := intraset_heatmap.NewIntrasetHeatmap(data, vg.Points(10), vg.Points(50), vg.Points(200))
+	heatmap := intraset_heatmap.NewIntrasetHeatmap(data, 175.0, 0.0, vg.Points(10), vg.Points(50), vg.Points(200), func(intensity float64) color.Color {
+		return color.RGBA{
+			R: 0,
+			G: uint8(intensity),
+			B: 0,
+			A: 255,
+		}
 
-	
+	})
 
 	p.Add(heatmap)
 	start := time.Now().AddDate(0, 0, -4).Truncate(24 * time.Hour) // Start 4 days ago, at midnight
-	end := time.Now().AddDate(0, 0, 1).Truncate(24 * time.Hour) // End today, at midnight
+	end := time.Now().AddDate(0, 0, 1).Truncate(24 * time.Hour)    // End today, at midnight
 
 	p.Y.Padding = vg.Length(40)
 
-	p.X.Tick.Marker = plot.TickerFunc( heatmap.GenerateXTickers)
+	p.X.Tick.Marker = plot.TickerFunc(heatmap.GenerateXTickers)
 
-	p.X.Max =  float64(end.Unix())  // Set max x to 5 days ago
+	p.X.Max = float64(end.Unix())   // Set max x to 5 days ago
 	p.X.Min = float64(start.Unix()) // Set min x to 5 days ago
-	
+
 	p.Y.Max = float64(heatmap.MaxReps + 5)
 	p.Y.Min = 1
 
@@ -74,11 +81,28 @@ func generateRandomSets(n int, maxWeight, minWeight float64, maxRepCount, minRep
 
 func generateRandomReps(n int, maxWeight float64, minWeight float64) []*intraset_heatmap.Rep {
 
-	reps := make([]*intraset_heatmap.Rep, n)
-	for i := 0; i < n; i++ {
-		repNo := i
-		rep := intraset_heatmap.NewRep((minWeight + rand.Float64()*(maxWeight-minWeight)), repNo)
-		reps[i] = rep
+	reps := make([]*intraset_heatmap.Rep, 0, n)
+	nDifferentWeights := 3
+	if n < nDifferentWeights {
+		nDifferentWeights = n
 	}
+
+	repTracker := [4]int{
+		0,
+		rand.Intn(nDifferentWeights*2/3) + 1,
+		rand.Intn(nDifferentWeights/3) + 1,
+	}
+	repTracker[2] = n - repTracker[0] - repTracker[1]
+	//w := minWeight + rand.Float64()*(maxWeight-minWeight)
+	m := 0
+	for rdx := 0; rdx < len(repTracker); rdx++ {
+		w := minWeight + rand.Float64()*(maxWeight-minWeight)
+		for i := 0; i < repTracker[rdx]; i++ {
+
+			reps = append(reps, intraset_heatmap.NewRep(w, m))
+			m++
+		}
+	}
+
 	return reps
 }
