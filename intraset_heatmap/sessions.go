@@ -5,6 +5,8 @@ import "time"
 type Sessioner interface {
 	GetSession(i int) *Session // GetSessions retrieves i. session
 	Len() int                  // Len returns the number of sessions
+	GetMaxSetSize() int      // GetMaxSetSize returns the maximum number of sets in any session
+	GetDateRange() (min, max time.Time) // GetDateRange returns the minimum and maximum dates from the sessions
 }
 
 type Sessions []*Session
